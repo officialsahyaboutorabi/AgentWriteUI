@@ -58,25 +58,33 @@ This project leverages LangGraph to orchestrate a series of language model inter
 
 BEFORE YOU START (you must be inside this folder AgentWriteUI)
 
+Proceed directly to step 4 if you wish to use Ollama only, although it is highly recommended to create a `.env` file just incase you wish to use GROQ or OpenAI.
+
 1. You must create a `.env` file by running this command:
    ```
    cat > .env
    ```
-   After you run the command, paste the following in the next line.
+   After you run the command, paste the following in the next line and replace both placeholders with your actual API keys.
    ```
    OPENAI_API_KEY="REPLACE WITH YOUR OPENAIAPIKEY"
    GROQ_API_KEY="REPLACE WITH YOUR GROQAPIKEY"
    ```
    Then you press enter and it will write it in the file.
 
-2. Set up your environment variables in a `.env` file:
+   However if you do not have either of those keys, you may get keys from both websites:
+   [OpenAI API Key](https://platform.openai.com/api-keys)
+   [GROQ API Key](https://console.groq.com/keys)
+
+   If you don't have an account with either of the services listed above, you may need to sign up for an account.
+
+3. Set up your environment variables by running these commands:
    ```
-   OPENAI_API_KEY="REPLACE WITH YOUR OPENAIAPIKEY"
-   GROQ_API_KEY="REPLACE WITH YOUR GROQAPIKEY"
+   export OPENAI_API_KEY="REPLACE WITH YOUR OPENAIAPIKEY"
+   export GROQ_API_KEY="REPLACE WITH YOUR GROQAPIKEY"
    ```
    Once you finished setting up the `.env` file, save the file and then you can move onto the next step.
 
-3. Run the main script:
+4. Run the main script:
    ```
    python main.py
    ```
