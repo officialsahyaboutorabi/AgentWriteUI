@@ -100,6 +100,11 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
    python main.py
    ```
 
+## FAQ
+
+Q: Where can I see the results of the text generation?
+A: In the UI, it will show you the generated text as well as an exported .md file which is created in your local directory inside the AgentWriteUI file.
+
 ## Troubleshooting Errors
 
 Please see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for more information.
