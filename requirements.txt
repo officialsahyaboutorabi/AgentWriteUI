@@ -1,0 +1,8 @@
+langgraph
+langchain
+langchain-google-genai
+langchain-openai
+langchain-groq
+python-dotenv
+langchain-ollama
+httpx
