@@ -81,6 +81,30 @@ def generate_writing(instruction, num_steps, llm_name, model_name):
 
 # Gradio UI for AgentWriting
 def gradio_app():
+    last_inputs = {}  # Dictionary to store the last inputs
+    # Function to generate writing using the selected LLM
+    def on_generate_writing(instruction, num_steps, llm_provider, llm_model):
+        # Store the inputs for reuse in regeneration
+        last_inputs['instruction'] = instruction
+        last_inputs['num_steps'] = num_steps
+        last_inputs['llm_provider'] = llm_provider
+        last_inputs['llm_model'] = llm_model
+
+        return generate_writing(instruction, num_steps, llm_provider, llm_model)
+
+    # Function to regenerate the writing using the last stored inputs
+    def on_regenerate_writing():
+        if not last_inputs:
+            return "No previous input available for regeneration.", ""
+        
+        # Use the last stored inputs to regenerate the writing
+        return generate_writing(
+            last_inputs['instruction'],
+            last_inputs['num_steps'],
+            last_inputs['llm_provider'],
+            last_inputs['llm_model']
+        )
+        
     # Update model list when provider changes
     def update_model_choices(provider):
         return gr.update(choices=get_models(provider))
@@ -158,11 +182,20 @@ def gradio_app():
         # Button to trigger writing generation
         generate_button = gr.Button("Generate")
 
-        # Connect the button to the generate_writing function
+        # Button to regenerate the output
+        regenerate_button = gr.Button('\U0001f504 Regenerate', variant='secondary', elem_classes='refresh_button')
+
+        # Connect the generate button to the on_generate_writing function
         generate_button.click(
-            generate_writing, 
-            inputs=[input_instruction, input_steps, input_llm_provider, input_llm_model], 
-            outputs=[output_box, time_box, wordcount_box]  # Include the time_box as an output
+            on_generate_writing,
+            inputs=[input_instruction, input_steps, input_llm_provider, input_llm_model],
+            outputs=[output_box, time_box, wordcount_box]
+        )
+
+        # Connect the regenerate button to the on_regenerate_writing function
+        regenerate_button.click(
+            on_regenerate_writing,
+            outputs=[output_box, time_box, wordcount_box]
         )
 
     return interface
