@@ -100,10 +100,21 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
    python main.py
    ```
 
+
 ## FAQ
 
-Q: Where can I see the results of the text generation?
-A: In the UI, it will show you the generated text as well as an exported .md file which is created in your local directory inside the AgentWriteUI file.
+> [!TIP]
+> Q: Where can I see the results of the text generation?
+> A: In the UI, it will show you the generated text as well as an exported .md file which is created in your local directory inside the AgentWriteUI file.
+
+
+### Using the Test Branch
+
+> [!WARNING]
+> The `:test` branch has the latest unstable features and changes. Use it at your own risk as it may have bugs or incomplete features.
+
+If you want to try out new experimental features, you can use the `:test` tag like this:
+
 
 ## Troubleshooting Errors
 
