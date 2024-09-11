@@ -83,5 +83,5 @@ BEFORE YOU START (you must be inside this folder AgentWriteUI)
 
 ## Troubleshooting Errors
 
-Please see `TROUBLESHOOTING.md` for more information.
+Please see (./TROUBLESHOOTING.md) for more information.
 
