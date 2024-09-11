@@ -29,9 +29,8 @@ This project leverages LangGraph to orchestrate a series of language model inter
    ```
 
 3. Create a new conda environment. You must have miniconda installed.
-   ```
-   Install Miniconda here if you don't have it already: https://docs.anaconda.com/miniconda/miniconda-install/
-   ```
+   
+   Install Miniconda here if you don't have it already: [Miniconda Installation](https://docs.anaconda.com/miniconda/miniconda-install/)
 
    If you have it already, create the new environment using the command below:
 
@@ -46,7 +45,7 @@ This project leverages LangGraph to orchestrate a series of language model inter
    ```
 
 
-4. Once you have created your conda environment, you must install the dependencies:
+5. Once you have created your conda environment, you must install the dependencies:
 
    ```
    pip install -r requirements.txt
@@ -85,6 +84,18 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
    Once you finished setting up the `.env` file, save the file and then you can move onto the next step.
 
 4. Run the main script:
+   ```
+   python main.py
+   ```
+
+## If you wish to close and reopen the UI, do the following.
+
+1. Run this command.
+   ```bash
+   fuser -k 7860/tcp
+   ```
+
+   And then after, re-run the main script:
    ```
    python main.py
    ```
