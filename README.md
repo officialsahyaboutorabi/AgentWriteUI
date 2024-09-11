@@ -81,7 +81,7 @@ BEFORE YOU START (you must be inside this folder AgentWriteUI)
    python main.py
    ```
 
+## Troubleshooting Errors
 
-
-
+Please see `TROUBLESHOOTING.md` for more information.
 
