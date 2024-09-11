@@ -6,3 +6,4 @@ langchain-groq
 python-dotenv
 langchain-ollama
 httpx
+gradio
