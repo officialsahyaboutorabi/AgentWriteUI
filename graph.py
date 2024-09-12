@@ -3,9 +3,9 @@ from langgraph.graph import StateGraph, END
 from typing_extensions import TypedDict
 from typing import List
 
-from nodes.planning_node import planning_node
-from nodes.writing_node import writing_node
-from nodes.saving_node import saving_node
+#from nodes.planning_node import planning_node (DON'T UNCOMMENT)
+#from nodes.writing_node import writing_node (DON'T UNCOMMENT)
+#from nodes.saving_node import saving_node (DON'T UNCOMMENT)
 
 
 class GraphState(TypedDict):
@@ -30,17 +30,15 @@ class GraphState(TypedDict):
 
 
 def create_workflow(llm):
-    workflow = StateGraph(GraphState)
+    from nodes.planning_node import planning_node
+    from nodes.writing_node import writing_node
+    from nodes.saving_node import saving_node
 
-    # Add nodes
+    workflow = StateGraph(GraphState)
     workflow.add_node("planning_node", planning_node)
     workflow.add_node("writing_node", writing_node)
     workflow.add_node("saving_node", saving_node)
-
-    # Set entry point
     workflow.set_entry_point("planning_node")
-
-    # Add edges
     workflow.add_edge("planning_node", "writing_node")
     workflow.add_edge("writing_node", "saving_node")
     workflow.add_edge("saving_node", END)
