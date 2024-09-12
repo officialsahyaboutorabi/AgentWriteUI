@@ -1,5 +1,5 @@
 from langchain.schema import Document
-from chains.write_chain import write_chain
+from chains.wwrite_chain import write_chain
 
 def count_words(text):
         """
