@@ -114,6 +114,16 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 > [!WARNING]
 > For any user who doesn't have a GPT-Plus subscription, they will not be able to use `gpt-4`. They are only able to use `gpt-3.5-turbo`.
 
+## OLLAMA
+
+> [!WARNING]
+> If you wish to generate writing locally with Ollama models, you must have Ollama installed on your system or it will not work.
+> Only text-generation models will work at the moment. However we will add new capabilities so stay tuned!
+
+> [!TIP]
+> To install Ollama on your system, go directly to the [Ollama Website](https://ollama.com/download)
+
+
 
 ## FAQ
 
