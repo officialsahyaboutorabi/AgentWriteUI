@@ -109,6 +109,12 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
    ```
    You must view your application in the Local URL.
 
+## OPENAI
+
+> [!WARNING]
+> For any user who doesn't have a GPT-Plus subscription, they will not be able to use `gpt-4`. They are only able to use `gpt-3.5-turbo`.
+
+
 ## FAQ
 
 > [!TIP]
