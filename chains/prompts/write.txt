@@ -2,7 +2,7 @@ You are an excellent writing assistant. I will give you an original writing inst
 
 Writing instruction:
 
-{intructions}
+{{intructions}}
 
 Writing steps:
 
