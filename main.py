@@ -1,17 +1,32 @@
-import gradio as gr
-import sys
-import os
+import streamlit as st
 import time
 import httpx
-
-# Ensure the correct path is set for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from LLMs.llm import LLM, OLLAMA_LLM, OPENAI_LLM, get_models, get_ollama_models
+from LLMs.llm import get_models
 from dotenv import load_dotenv
-from graph import create_workflow
 from tools import write_markdown_file
 from ollama import Client
+from graph import create_workflow
+import logging
+import os
+import sys
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+# Ensure the path is correct
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Load environment variables
+load_dotenv()
 
 def get_available_models():
     """Fetch and return a list of available models from Ollama."""
@@ -21,186 +36,208 @@ def get_available_models():
         models = client.list()
         return [model['name'] for model in models['models']]
     except httpx.ConnectTimeout:
-        print("Warning: Unable to connect to Ollama server. Please ensure it's running.")
+        st.warning("Unable to connect to Ollama server. Please ensure it's running.")
         return ["Ollama server not available"]
     except Exception as e:
-        print(f"An error occurred while fetching models: {str(e)}")
+        st.error(f"An error occurred while fetching models: {str(e)}")
         return ["Error fetching models"]
 
 available_models = get_available_models()
 
-
-# Load environment variables
-load_dotenv()
-
-# Create the workflow using the LLM class
-#app = create_workflow(LLM)
-
 # Define available LLM options
-llm_options = ["GROQ", "OpenAI", "Ollama"]  # Add other options as needed
+llm_options = ["GROQ", "OpenAI", "Ollama"]
 
+from langchain_groq import ChatGroq
+from ollama import Client
+from openai import OpenAI
+
+
+olclient = Client(host='http://localhost:11434')
+klient = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_writing(instruction, num_steps, llm_name, model_name):
-    """
-    Generates a piece of writing based on the user's input, selected LLM, and model.
-    """
+    start_time = time.time()  # Start timing here
+
     try:
-        # Dynamically select the LLM based on the user's choice
-        if llm_name == "GROQ":
-            app = create_workflow(LLM)  # Use the Groq model
-        elif llm_name == "OpenAI":
-            # Use the Ollama model if selected (make sure to define OPENAI_LLM properly)
-            app = create_workflow(OPENAI_LLM)
+        logger.info(f"Starting writing generation with LLM: {llm_name}, Model: {model_name}")
+
+        if llm_name == "OpenAI":
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                logger.error("OPENAI_API_KEY environment variable not set")
+                raise RuntimeError("OPENAI_API_KEY environment variable not set")
+            logger.info(f"Using OpenAI model {model_name}")
+            write_path = os.path.join(os.path.dirname(__file__), 'chains/prompts', 'write.txt')
+            with open(write_path, 'r') as file:
+                write_path = file.read()
+
+            # OpenAI API call
+            response = klient.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": write_path},
+                    {"role": "user", "content": instruction},
+                ],
+                stream=True
+            )
+
+            final_doc = ""
+            word_count = 0
+            for chunk in response:
+                if hasattr(chunk, 'choices') and chunk.choices:
+                    choice = chunk.choices[0]
+                    delta = choice.delta
+                    if delta and delta.content:
+                        content = delta.content
+                        final_doc += content
+                        word_count += len(content.split())
+                else:
+                    logger.warning(f"Unexpected chunk format: {chunk}")
+
+        elif llm_name == "GROQ":
+            logger.info(f"Using GROQ model {model_name}")
+
+            # Ensure you use the GROQ-specific API or client
+            LLM = ChatGroq(model=model_name, temperature=0)
+            app = create_workflow(LLM)
+            
+            # Inputs for the GROQ model workflow
+            # Initialize inputs
+            inputs = {
+                "initial_prompt": instruction,
+                "num_steps": num_steps,
+                "llm_name": llm_name,
+                "model_name": model_name
+            }
+            
+            # Double-check the invoke method is correct for GROQ
+            output = app.invoke(inputs)
+            final_doc = output.get('final_doc', 'No output generated.')
+            word_count = output.get('word_count', 0)
+
         elif llm_name == "Ollama":
-            # Use the Ollama model if selected (make sure to define OLLAMA_LLM properly)
-            app = create_workflow(OLLAMA_LLM)
-            pass  # Replace with the correct Ollama workflow logic
+            logger.info(f"Using Ollama model {model_name}")
+            write_path = os.path.join(os.path.dirname(__file__), 'chains/prompts', 'write.txt')
+            with open(write_path, 'r') as file:
+                write_content = file.read()
+
+            # Ollama API call
+            response = olclient.chat(
+                model=model_name, 
+                messages=[
+                    {"role": "system", "content": write_content},
+                    {"role": "user", "content": instruction},
+                ],
+                stream=True
+            )
+            final_doc = ""
+            word_count = 0
+
+            for chunk in response:
+                if 'message' in chunk and 'content' in chunk['message']:
+                    content = chunk['message']['content']
+                    final_doc += content
+                    word_count += len(content.split())
+                else:
+                    logger.warning(f"Unexpected chunk format: {chunk}")
+
+            # Skip the `app.invoke` part for Ollama since you don't want to use the GROQ workflow here
+            # This avoids using `create_workflow` and `app.invoke` when using Ollama
+
         else:
-            return "Unknown LLM selected", ""
+            logger.error(f"Unknown LLM selected: {llm_name}")
+            return "Unknown LLM selected", "", 0
 
-        inputs = {
-            "initial_prompt": instruction,
-            "num_steps": num_steps,
-            "llm_name": llm_name,
-            "model_name": model_name
-        }
-        
-        start_time = time.time()  # Start timing
-        
-        output = app.invoke(inputs)
-        duration = time.time() - start_time  # Calculate duration
-        
-        # Write the output to a markdown file
-        write_markdown_file(output['final_doc'], "generated_writing")
+        duration = time.time() - start_time  # Set duration here
+        logger.info("Workflow created successfully")
+        logger.debug(f"llm_name: {llm_name}, model_name: {model_name}")
 
-        return output['final_doc'], f"Time taken: {duration:.2f} seconds", output['word_count']
+        write_markdown_file(final_doc, "generated_writing")
+        logger.info(f"Output written to markdown file")
+
+        return final_doc, f"Time taken: {duration:.2f} seconds", word_count
+
     except Exception as e:
-        print("Error during workflow execution:", e)  # Error handling
-        return "An error occurred while generating the writing.", ""
+        duration = time.time() - start_time  # Ensure duration is set even if there's an error
+        logger.error(f"Error during workflow execution: {e}")
+        st.error(f"Error during workflow execution: {e}")
+        return "An error occurred while generating the writing.", "", 0
 
+def main():
+    st.title("AgentWriting: AI Writing Assistant")
 
-# Gradio UI for AgentWriting
-def gradio_app():
-    last_inputs = {}  # Dictionary to store the last inputs
-    # Function to generate writing using the selected LLM
-    def on_generate_writing(instruction, num_steps, llm_provider, llm_model):
-        # Store the inputs for reuse in regeneration
-        last_inputs['instruction'] = instruction
-        last_inputs['num_steps'] = num_steps
-        last_inputs['llm_provider'] = llm_provider
-        last_inputs['llm_model'] = llm_model
+    # User inputs
+    instruction = st.text_area("Enter Writing Instruction", "Type the writing prompt or instruction here.")
+    num_steps = st.slider("Number of Steps", min_value=0, max_value=4, value=0, step=1)
+    llm_provider = st.selectbox("Select LLM Provider", llm_options, index=0)
+    
+    if llm_provider == "Ollama":
+        llm_model = st.selectbox("Select LLM Model", options=get_available_models(), index=0)
+    else:
+        llm_model = st.selectbox("Select LLM Model", options=get_models(llm_provider), index=0)
 
-        return generate_writing(instruction, num_steps, llm_provider, llm_model)
+    # Generate button
+    if st.button("Generate"):
+        logger.info(f"Generate button pressed with provider: {llm_provider} and model: {llm_model}")
+        output, duration, word_count = generate_writing(instruction, num_steps, llm_provider, llm_model)
+        st.subheader("Generated Output")
+        st.text_area("Output", output, height=300)
+        st.write(f"Time taken: {duration}")
+        st.write(f"Word Count: {word_count}")
 
-    # Function to regenerate the writing using the last stored inputs
-    def on_regenerate_writing():
-        if not last_inputs:
-            return "No previous input available for regeneration.", ""
+        # Store last inputs for regeneration
+        st.session_state.last_inputs = {
+            'instruction': instruction,
+            'num_steps': num_steps,
+            'llm_provider': llm_provider,
+            'llm_model': llm_model
+        }
+
+    # Regenerate button
+    if st.button("Regenerate"):
+        if 'last_inputs' in st.session_state:
+            last_inputs = st.session_state.last_inputs
+            output, duration, word_count = generate_writing(
+                last_inputs['instruction'],
+                last_inputs['num_steps'],
+                last_inputs['llm_provider'],
+                last_inputs['llm_model']
+            )
+            st.subheader("Generated Output")
+            st.text_area("Output", output, height=300)
+            st.write(f"Time taken: {duration}")
+            st.write(f"Word Count: {word_count}")
+        else:
+            st.warning("No previous input available for regeneration.")
+
+    def update_selection():
+        if 'last_inputs' in st.session_state:
+            # Lambda functions to get selected values
+            get_selected_provider = lambda: st.session_state.last_inputs.get('llm_provider')
+            get_selected_model_name = lambda: st.session_state.last_inputs.get('llm_model')
         
-        # Use the last stored inputs to regenerate the writing
-        return generate_writing(
-            last_inputs['instruction'],
-            last_inputs['num_steps'],
-            last_inputs['llm_provider'],
-            last_inputs['llm_model']
-        )
+            # Retrieve the selected values
+            selected_provider = get_selected_provider()
+            selected_model_name = get_selected_model_name()
         
-    # Update model list when provider changes
-    def update_model_choices(provider):
-        return gr.update(choices=get_models(provider))
-
-    with gr.Blocks() as interface:
-        gr.Markdown("## AgentWriting: AI Writing Assistant")
+            # Update the provider dropdown
+            provider_index = llm_options.index(selected_provider) if selected_provider in llm_options else 0
+            llm_provider = st.selectbox("Select LLM Provider", llm_options, index=provider_index)
         
-        with gr.Row():
-
-            input_instruction = gr.Textbox(
-                label="Enter Writing Instruction", 
-                lines=2, 
-                placeholder="Type the writing prompt or instruction here."
-            )
-            input_steps = gr.Slider(
-                label="Number of Steps", 
-                minimum=0, 
-                maximum=4, 
-                step=1, 
-                value=0, 
-                info="Specify how many steps the writing process should take."
-            )
-            
-            # Dropdown for selecting the LLM provider
-            input_llm_provider = gr.Dropdown(
-                label="Select LLM Provider", 
-                choices=llm_options, 
-                value="GROQ", 
-                info="Select the LLM provider."
-            )
-            
-            if input_llm_provider.value == "Ollama":
-                input_llm_model = gr.Dropdown(
-                label="Select LLM Model", 
-                choices=get_ollama_models,  # Default model list
-                value="Default", 
-                info="Select the model to use.",
-                allow_custom_value=True  # Allow custom models not in the list
-            )
+            # Update the model dropdown based on the selected provider
+            if llm_provider == "Ollama":
+                models = get_available_models()
             else:
-                input_llm_model = gr.Dropdown(
-                label="Select LLM Model", 
-                choices=get_models("GROQ"),  # Default model list
-                value="Default", 
-                info="Select the model to use.",
-                allow_custom_value=True  # Allow custom models not in the list
-            )
-
-        output_box = gr.Textbox(
-            label="Generated Output", 
-            lines=20, 
-            placeholder="Your generated writing will appear here."
-        )
+                models = get_models(llm_provider)
         
-        time_box = gr.Textbox(
-            label="Generation Time", 
-            lines=1, 
-            placeholder="The time taken to generate the output will appear here."
-        )
+            model_index = models.index(selected_model_name) if selected_model_name in models else 0
+            llm_model = st.selectbox("Select LLM Model", options=models, index=model_index)
+            
+            # Ensure the selected values are updated in the session state
+            st.session_state.last_inputs['llm_provider'] = llm_provider
+            st.session_state.last_inputs['llm_model'] = llm_model
 
-        wordcount_box = gr.Textbox(
-            label="Word Count", 
-            lines=1, 
-            placeholder="The number of words used in the generated response."
-        )
+        update_selection()
 
-
-        # Update the model dropdown based on the selected provider
-        input_llm_provider.change(
-            fn=update_model_choices, 
-            inputs=input_llm_provider, 
-            outputs=input_llm_model
-        )
-
-        # Button to trigger writing generation
-        generate_button = gr.Button("Generate")
-
-        # Button to regenerate the output
-        regenerate_button = gr.Button('\U0001f504 Regenerate', variant='secondary', elem_classes='refresh_button')
-
-        # Connect the generate button to the on_generate_writing function
-        generate_button.click(
-            on_generate_writing,
-            inputs=[input_instruction, input_steps, input_llm_provider, input_llm_model],
-            outputs=[output_box, time_box, wordcount_box]
-        )
-
-        # Connect the regenerate button to the on_regenerate_writing function
-        regenerate_button.click(
-            on_regenerate_writing,
-            outputs=[output_box, time_box, wordcount_box]
-        )
-
-    return interface
-
-
-# Launch the Gradio app
 if __name__ == "__main__":
-    gradio_app().launch()
+    main()
