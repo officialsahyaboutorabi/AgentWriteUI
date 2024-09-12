@@ -1,11 +1,13 @@
 langgraph
 langchain
-langchain-google-genai
-langchain-openai
+openai
 langchain-groq
 python-dotenv
-langchain-ollama
+langchain-core
+ollama
 httpx
-gradio
+pillow
+numpy
+streamlit
 typing_extensions
 typing
