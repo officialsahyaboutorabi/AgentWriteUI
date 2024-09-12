@@ -90,16 +90,24 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 
 ## If you wish to close and reopen the UI, do the following.
 
-1. Run this command.
+1. Run this command. Make sure you replace the port with the port you are hosting this program in. To find your port, after running the `main.py` file, see Step 2.
    ```bash
-   fuser -k 7860/tcp
+   fuser -k 8501/tcp
    ```
 
    And then after, re-run the main script:
    ```
-   python main.py
+   streamlit run main.py
    ```
+2. You should see the following after running the command:
 
+   ```
+   You can now view your Streamlit app in your browser.
+   
+   Local URL: http://localhost:8501
+   Network URL: http://172.31.61.124:8501
+   ```
+   You must view your application in the Local URL.
 
 ## FAQ
 
