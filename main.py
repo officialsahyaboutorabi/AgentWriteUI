@@ -168,13 +168,15 @@ def main():
 
     # User inputs
     instruction = st.text_area("Enter Writing Instruction", "Type the writing prompt or instruction here.")
-    num_steps = st.slider("Number of Steps", min_value=0, max_value=4, value=0, step=1)
-    llm_provider = st.selectbox("Select LLM Provider", llm_options, index=0)
+    # Sidebar for settings
+    st.sidebar.title("Settings")
+    num_steps = st.sidebar.slider("Number of Steps", min_value=0, max_value=4, value=0, step=1)
+    llm_provider = st.sidebar.selectbox("Select LLM Provider", llm_options, index=0)
     
     if llm_provider == "Ollama":
-        llm_model = st.selectbox("Select LLM Model", options=get_available_models(), index=0)
+        llm_model = st.sidebar.selectbox("Select LLM Model", options=get_available_models(), index=0)
     else:
-        llm_model = st.selectbox("Select LLM Model", options=get_models(llm_provider), index=0)
+        llm_model = st.sidebar.selectbox("Select LLM Model", options=get_models(llm_provider), index=0)
 
     # Generate button
     if st.button("Generate"):
@@ -222,7 +224,7 @@ def main():
         
             # Update the provider dropdown
             provider_index = llm_options.index(selected_provider) if selected_provider in llm_options else 0
-            llm_provider = st.selectbox("Select LLM Provider", llm_options, index=provider_index)
+            llm_provider = st.sidebar.selectbox("Select LLM Provider", llm_options, index=provider_index)
         
             # Update the model dropdown based on the selected provider
             if llm_provider == "Ollama":
@@ -231,7 +233,7 @@ def main():
                 models = get_models(llm_provider)
         
             model_index = models.index(selected_model_name) if selected_model_name in models else 0
-            llm_model = st.selectbox("Select LLM Model", options=models, index=model_index)
+            llm_model = st.sidebar.selectbox("Select LLM Model", options=models, index=model_index)
             
             # Ensure the selected values are updated in the session state
             st.session_state.last_inputs['llm_provider'] = llm_provider
