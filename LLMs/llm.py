@@ -12,7 +12,7 @@ def get_models(provider):
     if provider == "GROQ":
         return ["llama-3.1-70b-versatile", "gemma-7b-it"]  # Example model names
     elif provider == "OpenAI":
-        return ['gpt-3.5-turbo', 'gpt-4']  # Example model names
+        return ['gpt-3.5-turbo', 'gpt-4', 'dall-e-3']  # Example model names
     
     else:
         return []
