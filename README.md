@@ -10,6 +10,8 @@
     It is designed to create an advanced writing assistant powered by language models and graph-based workflows using a UI interface.
 </p>
 
+<br><br><br>
+
 ## Description
 
 This project leverages LangGraph to orchestrate a series of language model interactions, creating a powerful tool for automated content generation. It breaks down complex writing tasks into manageable steps, including planning, writing, and refining content.
