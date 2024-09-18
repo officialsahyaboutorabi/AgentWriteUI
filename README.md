@@ -8,13 +8,13 @@ This project leverages LangGraph to orchestrate a series of language model inter
 
 ## Features
 
-- Automated content planning
-- Paragraph-by-paragraph content generation
-- Integration with multiple language models (OpenAI, GROQ, OLLaMA)
-- Flexible workflow management using LangGraph
-- Markdown output for generated content
-- Working User Interface to generate content
-- (BRAND NEW 🎉): Image-To-Story Generation (OLLaMA only)
+- [x] Automated content planning
+- [x] Paragraph-by-paragraph content generation
+- [x] Integration with multiple language models (OpenAI, GROQ, OLLaMA)
+- [x] Flexible workflow management using LangGraph
+- [x] Markdown output for generated content
+- [x] Working User Interface to generate content
+- [x] (BRAND NEW 🎉): Image-To-Story Generation (OLLaMA only)
 
 ## Installation
 
@@ -145,6 +145,12 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 
 If you want to try out new experimental features, you can use the `:test` tag like this:
 
+### Plans for the Future
+
+## We always look to update this software. We plan to add:
+
+- [x] Image-To-Story Generation (COMPLETED)
+- [ ] Multiple Languages in the Interface (German, Japanese and many more languages)
 
 ## Troubleshooting Errors
 
