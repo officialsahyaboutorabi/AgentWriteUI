@@ -9,6 +9,11 @@ from graph import create_workflow
 import logging
 import os
 import sys
+from PIL import Image
+import numpy as np
+import base64
+from io import BytesIO
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +33,38 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Load environment variables
 load_dotenv()
 
+# Function to load translations
+def load_translations():
+    with open("translation/lang.json", "r", encoding="utf-8") as file:
+        return json.load(file)
+
+# Load translations
+translations = load_translations()
+
+# Function to get the translated text based on the current language
+def get_translation(key):
+    if 'selected_language' not in st.session_state:
+        st.session_state['selected_language'] = 'en'  # Default to English if not set
+    lang = st.session_state['selected_language']
+    return translations.get(lang, {}).get(key, key)
+
+# Define available languages with translatable names
+languages = {
+    get_translation("English"): "en",
+    get_translation("German"): "de",
+    get_translation("Japanese"): "ja",
+    get_translation("Turkish"): "tr"
+}
+
+# Initialize default language if not set
+if 'selected_language' not in st.session_state:
+    st.session_state['selected_language'] = list(languages.values())[0]
+
+# Define the translation function BEFORE usage
+def _(key):
+    return translations.get(st.session_state['selected_language'], {}).get(key, key)
+
+
 def get_available_models():
     """Fetch and return a list of available models from Ollama."""
     try:
@@ -36,11 +73,11 @@ def get_available_models():
         models = client.list()
         return [model['name'] for model in models['models']]
     except httpx.ConnectTimeout:
-        st.warning("Unable to connect to Ollama server. Please ensure it's running.")
-        return ["Ollama server not available"]
+        st.warning(_("Unable to connect to Ollama server. Please ensure it's running."))
+        return [_("Ollama server not available")]
     except Exception as e:
-        st.error(f"An error occurred while fetching models: {str(e)}")
-        return ["Error fetching models"]
+        st.error(f"{_('An error occurred while fetching models')}: {str(e)}")
+        return [_("Error fetching models")]
 
 available_models = get_available_models()
 
@@ -51,11 +88,10 @@ from langchain_groq import ChatGroq
 from ollama import Client
 from openai import OpenAI
 
-
 olclient = Client(host='http://localhost:11434')
 klient = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def generate_writing(instruction, num_steps, llm_name, model_name):
+def generate_writing(instruction, num_steps, llm_name, model_name, storytitle):
     start_time = time.time()  # Start timing here
 
     try:
@@ -64,8 +100,8 @@ def generate_writing(instruction, num_steps, llm_name, model_name):
         if llm_name == "OpenAI":
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
-                logger.error("OPENAI_API_KEY environment variable not set")
-                raise RuntimeError("OPENAI_API_KEY environment variable not set")
+                logger.error(_("OPENAI_API_KEY environment variable not set"))
+                raise RuntimeError(_("OPENAI_API_KEY environment variable not set"))
             logger.info(f"Using OpenAI model {model_name}")
             write_path = os.path.join(os.path.dirname(__file__), 'chains/prompts', 'write.txt')
             with open(write_path, 'r') as file:
@@ -102,17 +138,16 @@ def generate_writing(instruction, num_steps, llm_name, model_name):
             app = create_workflow(LLM)
             
             # Inputs for the GROQ model workflow
-            # Initialize inputs
             inputs = {
                 "initial_prompt": instruction,
                 "num_steps": num_steps,
                 "llm_name": llm_name,
-                "model_name": model_name
+                "model_name": model_name,
+                "storytitle": storytitle
             }
             
-            # Double-check the invoke method is correct for GROQ
             output = app.invoke(inputs)
-            final_doc = output.get('final_doc', 'No output generated.')
+            final_doc = output.get('final_doc', _('No output generated.'))
             word_count = output.get('word_count', 0)
 
         elif llm_name == "Ollama":
@@ -141,76 +176,95 @@ def generate_writing(instruction, num_steps, llm_name, model_name):
                 else:
                     logger.warning(f"Unexpected chunk format: {chunk}")
 
-            # Skip the `app.invoke` part for Ollama since you don't want to use the GROQ workflow here
-            # This avoids using `create_workflow` and `app.invoke` when using Ollama
-
         else:
-            logger.error(f"Unknown LLM selected: {llm_name}")
-            return "Unknown LLM selected", "", 0
+            logger.error(f"{_('Unknown LLM selected')}: {llm_name}")
+            return _("Unknown LLM selected"), "", 0
 
-        duration = time.time() - start_time  # Set duration here
-        logger.info("Workflow created successfully")
+        duration = time.time() - start_time
+        logger.info(_("Workflow created successfully"))
         logger.debug(f"llm_name: {llm_name}, model_name: {model_name}")
 
-        write_markdown_file(final_doc, "generated_writing")
-        logger.info(f"Output written to markdown file")
+        write_markdown_file(final_doc, f"{model_name}-{storytitle}")
+        logger.info(_("Output written to markdown file"))
 
-        return final_doc, f"Time taken: {duration:.2f} seconds", word_count
+        return final_doc, f"{_('Time taken')}: {duration:.2f} {_('seconds')}", word_count
 
     except Exception as e:
-        duration = time.time() - start_time  # Ensure duration is set even if there's an error
-        logger.error(f"Error during workflow execution: {e}")
-        st.error(f"Error during workflow execution: {e}")
-        return "An error occurred while generating the writing.", "", 0
+        duration = time.time() - start_time
+        logger.error(f"{_('Error during workflow execution')}: {e}")
+        st.error(f"{_('Error during workflow execution')}: {e}")
+        return _("An error occurred while generating the writing."), "", 0
+
+# Language selection dropdown
+def update_language(selected_language_key):
+    selected_language_value = languages[selected_language_key]
+    st.session_state['selected_language'] = selected_language_value
 
 def main():
-    st.title("AgentWriting: AI Writing Assistant")
+    # Language selection dropdown
+    selected_language_key = st.sidebar.selectbox(
+        _("Select Language"), 
+        options=list(languages.keys()), 
+        index=list(languages.values()).index(st.session_state['selected_language'])
+    )
+
+    if languages[selected_language_key] != st.session_state['selected_language']:
+        update_language(selected_language_key)
+
+    st.title(_("📝 AgentWriting UI"))
+    st.subheader(_("An AI Writing Assistant"))
 
     # User inputs
-    instruction = st.text_area("Enter Writing Instruction", "Type the writing prompt or instruction here.")
+    storytitle = st.text_area(_("Title of the Story"), _("Give a name to your story."))
+    instruction = st.text_area(_("Enter Writing Instruction"), _("Type the writing prompt or instruction here."))
+    
     # Sidebar for settings
-    st.sidebar.title("Settings")
-    num_steps = st.sidebar.slider("Number of Steps", min_value=0, max_value=4, value=0, step=1)
-    llm_provider = st.sidebar.selectbox("Select LLM Provider", llm_options, index=0)
+    st.sidebar.title(_("Settings"))
+
+    with st.sidebar.expander(_("Advanced Options")):
+        num_steps = st.slider(_("Number of Steps"), min_value=0, max_value=4, value=0, step=1)
+
+    llm_provider = st.sidebar.selectbox(_("Select LLM Provider"), llm_options, index=0)
     
     if llm_provider == "Ollama":
-        llm_model = st.sidebar.selectbox("Select LLM Model", options=get_available_models(), index=0)
+        llm_model = st.sidebar.selectbox(_("Select LLM Model"), options=get_available_models(), index=0)
     else:
-        llm_model = st.sidebar.selectbox("Select LLM Model", options=get_models(llm_provider), index=0)
+        llm_model = st.sidebar.selectbox(_("Select LLM Model"), options=get_models(llm_provider), index=0)
 
     # Generate button
-    if st.button("Generate"):
+    if st.button(_("Generate")):
         logger.info(f"Generate button pressed with provider: {llm_provider} and model: {llm_model}")
-        output, duration, word_count = generate_writing(instruction, num_steps, llm_provider, llm_model)
-        st.subheader("Generated Output")
-        st.text_area("Output", output, height=300)
-        st.write(f"Time taken: {duration}")
-        st.write(f"Word Count: {word_count}")
+        output, duration, word_count = generate_writing(instruction, num_steps, llm_provider, llm_model, storytitle)
+        st.subheader(_("Generated Output"))
+        st.text_area(_("Output"), output, height=300)  # Pass height directly, no translation needed
+        st.write(_(duration))
+        st.write(_(f"Word Count: {word_count}"))
 
-        # Store last inputs for regeneration
         st.session_state.last_inputs = {
             'instruction': instruction,
             'num_steps': num_steps,
             'llm_provider': llm_provider,
-            'llm_model': llm_model
+            'llm_model': llm_model,
+            'storytitle': storytitle
         }
 
     # Regenerate button
-    if st.button("Regenerate"):
+    if st.button(_("Regenerate")):
         if 'last_inputs' in st.session_state:
             last_inputs = st.session_state.last_inputs
             output, duration, word_count = generate_writing(
                 last_inputs['instruction'],
                 last_inputs['num_steps'],
                 last_inputs['llm_provider'],
-                last_inputs['llm_model']
+                last_inputs['llm_model'],
+                last_inputs['storytitle']
             )
-            st.subheader("Generated Output")
-            st.text_area("Output", output, height=300)
-            st.write(f"Time taken: {duration}")
-            st.write(f"Word Count: {word_count}")
+            st.subheader(_("Generated Output"))
+            st.text_area(_("Output"), output, height=300)  # Pass height directly, no translation needed
+            st.write(_(f"Time taken: {duration}"))
+            st.write(_(f"Word Count: {word_count}"))
         else:
-            st.warning("No previous input available for regeneration.")
+            st.warning(_("No previous input available for regeneration."))
 
     def update_selection():
         if 'last_inputs' in st.session_state:
@@ -224,7 +278,7 @@ def main():
         
             # Update the provider dropdown
             provider_index = llm_options.index(selected_provider) if selected_provider in llm_options else 0
-            llm_provider = st.sidebar.selectbox("Select LLM Provider", llm_options, index=provider_index)
+            llm_provider = st.sidebar.selectbox(_("Select LLM Provider"), llm_options, index=provider_index)
         
             # Update the model dropdown based on the selected provider
             if llm_provider == "Ollama":
@@ -233,13 +287,13 @@ def main():
                 models = get_models(llm_provider)
         
             model_index = models.index(selected_model_name) if selected_model_name in models else 0
-            llm_model = st.sidebar.selectbox("Select LLM Model", options=models, index=model_index)
+            llm_model = st.sidebar.selectbox(_("Select LLM Model"), options=models, index=model_index)
             
             # Ensure the selected values are updated in the session state
             st.session_state.last_inputs['llm_provider'] = llm_provider
             st.session_state.last_inputs['llm_model'] = llm_model
 
         update_selection()
-
+    
 if __name__ == "__main__":
     main()
