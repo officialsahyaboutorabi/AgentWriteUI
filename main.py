@@ -136,7 +136,7 @@ def generate_writing(instruction, num_steps, llm_name, model_name, storytitle):
             # Ensure you use the GROQ-specific API or client
             LLM = ChatGroq(model=model_name, temperature=0)
             app = create_workflow(LLM)
-            
+    
             # Inputs for the GROQ model workflow
             inputs = {
                 "initial_prompt": instruction,
@@ -145,11 +145,14 @@ def generate_writing(instruction, num_steps, llm_name, model_name, storytitle):
                 "model_name": model_name,
                 "storytitle": storytitle
             }
-            
+    
+            # Invoke the workflow and get the result
             output = app.invoke(inputs)
+
+            # Handle the output from the GROQ model
             final_doc = output.get('final_doc', _('No output generated.'))
             word_count = output.get('word_count', 0)
-
+            
         elif llm_name == "Ollama":
             logger.info(f"Using Ollama model {model_name}")
             write_path = os.path.join(os.path.dirname(__file__), 'chains/prompts', 'write.txt')
