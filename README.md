@@ -1,6 +1,14 @@
-# AgentWrite LangGraph UI
+<br/>
 
-AgentWrite LangGraph UI is an interface which allows you to use AgentWrite inside an interface. It is designed to create an advanced writing assistant powered by language models and graph-based workflows using a UI interface.
+<h1 align="center">
+    AgentWrite LangGraph UI
+</h1>
+
+<p align="center">
+    AgentWrite LangGraph UI is an interface which allows you to use AgentWrite inside an interface.
+    <br/>
+    It is designed to create an advanced writing assistant powered by language models and graph-based workflows using a UI interface.
+</p>
 
 ## Description
 
