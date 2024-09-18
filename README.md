@@ -145,9 +145,11 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 
 If you want to try out new experimental features, you can use the `:test` tag like this:
 
-### Plans for the Future
 
-## We always look to update this software. We plan to add:
+
+## Plans for the Future
+
+### We always look to update this software. We plan to add:
 
 - [x] Image-To-Story Generation (COMPLETED)
 - [ ] Multiple Languages in the Interface (German, Japanese and many more languages)
