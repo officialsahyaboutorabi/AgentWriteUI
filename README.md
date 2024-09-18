@@ -126,7 +126,7 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 
 > [!WARNING]
 > If you wish to generate writing locally with Ollama models, you must have Ollama installed on your system or it will not work.
-> Only text-generation models will work at the moment. However we will add new capabilities so stay tuned!
+> Only text-generation models will work at the moment. However we will add new capabilities so stay tuned! (UPDATE, THE IMAGE READING MODEL `llava` NOW WORKS)
 
 > [!TIP]
 > To install Ollama on your system, go directly to the [Ollama Website](https://ollama.com/download)
@@ -137,6 +137,12 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 > [!TIP]
 > 🎉 We have finally released our software with Image-To-Story feature
 > However it only works with `Ollama` at the moment.
+
+## Story-to-Image Generation Released
+
+> [!TIP]
+> 🎉 We have finally released our software with Story-To-Image Generation feature
+> However it only works with `OpenAI` at the moment and only the model `dall-e-3`.
 
 
 ## FAQ
@@ -160,7 +166,8 @@ If you want to try out new experimental features, you can use the `:test` tag li
 ### We always look to update this software. We plan to add:
 
 - [x] Image-To-Story Generation (COMPLETED)
-- [ ] Multiple Languages in the Interface (German, Japanese and many more languages)
+- [x] Multiple Languages in the Interface (German, Japanese and many more languages)
+- [x] Story-To-Image Generation (COMPLETED)
 
 ## Troubleshooting Errors
 
