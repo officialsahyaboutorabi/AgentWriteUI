@@ -124,6 +124,12 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 > To install Ollama on your system, go directly to the [Ollama Website](https://ollama.com/download)
 
 
+## Image-to-Story Generation Released
+
+> [!TIP]
+> 🎉 We have finally released our software with Image-To-Story feature
+> However it only works with `Ollama` at the moment.
+
 
 ## FAQ
 
