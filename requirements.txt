@@ -11,3 +11,4 @@ numpy
 streamlit
 typing_extensions
 typing
+pybase64
