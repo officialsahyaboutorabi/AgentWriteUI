@@ -14,7 +14,7 @@ This project leverages LangGraph to orchestrate a series of language model inter
 - Flexible workflow management using LangGraph
 - Markdown output for generated content
 - Working User Interface to generate content
-
+- (BRAND NEW 🎉): Image-To-Story Generation (OLLaMA only)
 
 ## Installation
 
