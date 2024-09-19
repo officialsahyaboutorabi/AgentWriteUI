@@ -53,9 +53,13 @@ languages = {
     get_translation("English"): "en",
     get_translation("German"): "de",
     get_translation("Japanese"): "ja",
-    get_translation("Turkish"): "tr"
+    get_translation("Turkish"): "tr",
+    get_translation("Farsi"): "ir",
+    get_translation("Dutch"): "nl",
+    get_translation("Italian"): "it",
+    get_translation("Russian"): "ru",
+    get_translation("Chinese"): "zh"
 }
-
 # Initialize default language if not set
 if 'selected_language' not in st.session_state:
     st.session_state['selected_language'] = list(languages.values())[0]
