@@ -93,7 +93,7 @@ Proceed directly to step 4 if you wish to use Ollama only, although it is highly
 
 4. Run the main script:
    ```
-   python main.py
+   streamlit run main.py
    ```
 
 ## If you wish to close and reopen the UI, do the following.
