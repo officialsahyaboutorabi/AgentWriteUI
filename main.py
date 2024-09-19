@@ -58,7 +58,10 @@ languages = {
     get_translation("Dutch"): "nl",
     get_translation("Italian"): "it",
     get_translation("Russian"): "ru",
-    get_translation("Chinese"): "zh"
+    get_translation("Chinese"): "zh",
+    get_translation("Afrikaans"): "af",
+    get_translation("French"): "fr",
+    get_translation("Polish"): "pl"
 }
 # Initialize default language if not set
 if 'selected_language' not in st.session_state:
