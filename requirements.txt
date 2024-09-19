@@ -12,3 +12,8 @@ streamlit
 typing_extensions
 typing
 pybase64
+time
+json
+ipython
+langchain_community
+os
