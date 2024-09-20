@@ -2,7 +2,7 @@
 
 # Sometimes Errors in this software may occur. In case they do, we have solutions for some of these known errors.
 
-1. Error 1
+Error 1: You may encounter this error while opening the app.
 ```python
 ImportError: cannot import name 'tool_call_chunk' from 'langchain_core.messages.tool' (/home/user/miniconda3/envs/agentwrite/lib/python3.11/site-packages/langchain_core/messages/tool.py)
 ```
@@ -12,8 +12,7 @@ pip uninstall langchain langchain-core langchain-openai
 pip install langchain==0.2.7 langchain-core==0.2.15 langchain-openai==0.1.15
 ```
 
-
-2.Error 2: You may encounter this error when trying to execute an instruction
+Error 2: You may encounter this error when trying to execute an instruction
 ```
 Error during workflow execution: Error code: 404 - {'error': {'message': 'The model llama3:latest does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
 ```
@@ -44,3 +43,15 @@ ollama pull nameofyourmodel
 ```
 
 After your preferred model is installed, you can now use it.
+
+Error 3: You may encounter this error also when opening the app.
+```python
+ImportError: cannot import name 'CONFIG_KEYS' from 'langchain_core.runnables.config' (/home/user/miniconda3/envs/agentwrite/lib/python3.11/site-packages/langchain_core/runnables/config.py)
+```
+
+Solution: Run the following command below
+```
+pip install langchain --upgrade
+```
+
+After running the command. Reopen the UI and it will fix the issue.
